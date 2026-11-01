@@ -1,0 +1,13 @@
+__pycache__/
+.venv/
+.pytest_cache/
+.ruff_cache/
+*.sqlite3*
+node_modules/
+dist/
+web/test-results/
+web/playwright-report/
+.DS_Store
+deploy/data/
+.claude/
+.superpowers/

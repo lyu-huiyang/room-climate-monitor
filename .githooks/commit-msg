@@ -1,0 +1,10 @@
+#!/bin/sh
+# Reject commit messages that carry AI co-author or "generated with" attribution.
+# Enable with: git config core.hooksPath .githooks
+msg_file="$1"
+
+if grep -Eiq '^[[:space:]]*co-authored-by:|generated with .*claude|noreply@anthropic\.com' "$msg_file"; then
+  echo "commit-msg: AI attribution is not allowed in commit messages (Co-Authored-By / Generated with / noreply@anthropic.com)." >&2
+  echo "commit-msg: 提交信息中不允许出现 AI 署名或共同作者信息，请删除后重新提交。" >&2
+  exit 1
+fi
