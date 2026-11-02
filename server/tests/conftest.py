@@ -18,3 +18,17 @@ def conn(settings):
     migrate(c)
     yield c
     c.close()
+
+
+@pytest.fixture
+def room(conn):
+    from rcm.rooms import create_room
+
+    return create_room(conn, "living-room", "客厅", now=NOW)
+
+
+@pytest.fixture
+def other_room(conn):
+    from rcm.rooms import create_room
+
+    return create_room(conn, "bedroom", "卧室", now=NOW)
