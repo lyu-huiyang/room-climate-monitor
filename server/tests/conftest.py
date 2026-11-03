@@ -1,5 +1,7 @@
 import pytest
+from fastapi.testclient import TestClient
 
+from rcm.api import create_app
 from rcm.config import Settings
 
 NOW = 1_792_308_900
@@ -8,6 +10,12 @@ NOW = 1_792_308_900
 @pytest.fixture
 def settings(tmp_path):
     return Settings(db_path=tmp_path / "test.sqlite3", host="127.0.0.1", port=8080, static_dir=None)
+
+
+@pytest.fixture
+def client(settings):
+    with TestClient(create_app(settings, clock=lambda: NOW)) as c:
+        yield c
 
 
 @pytest.fixture
@@ -32,3 +40,20 @@ def other_room(conn):
     from rcm.rooms import create_room
 
     return create_room(conn, "bedroom", "卧室", now=NOW)
+
+
+INDEX_HTML = "<!doctype html><title>rcm</title><div id=root></div>"
+
+
+@pytest.fixture
+def static_client(tmp_path):
+    static = tmp_path / "static"
+    (static / "assets").mkdir(parents=True)
+    (static / "index.html").write_text(INDEX_HTML)
+    (static / "assets" / "app-abc123.js").write_text("console.log(1)")
+    (static / "manifest.webmanifest").write_text("{}")
+    (tmp_path / "secret.txt").write_text("TOP-SECRET")
+    (static / "link.txt").symlink_to(tmp_path / "secret.txt")
+    settings = Settings(db_path=tmp_path / "s.sqlite3", host="127.0.0.1", port=8080, static_dir=static)
+    with TestClient(create_app(settings, clock=lambda: NOW)) as c:
+        yield c
