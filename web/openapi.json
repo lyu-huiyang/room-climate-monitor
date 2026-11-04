@@ -1,0 +1,561 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "room-climate-monitor",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/api/health": {
+      "get": {
+        "summary": "Health",
+        "operationId": "health_api_health_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "anyOf": [
+                      {
+                        "type": "boolean"
+                      },
+                      {
+                        "type": "string"
+                      }
+                    ]
+                  },
+                  "type": "object",
+                  "title": "Response Health Api Health Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rooms": {
+      "get": {
+        "summary": "List Rooms",
+        "operationId": "list_rooms_api_rooms_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "items": {
+                    "$ref": "#/components/schemas/RoomOut"
+                  },
+                  "type": "array",
+                  "title": "Response List Rooms Api Rooms Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rooms/{room_id}": {
+      "get": {
+        "summary": "Get Room",
+        "operationId": "get_room_api_rooms__room_id__get",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/RoomOut"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rooms/{room_id}/history": {
+      "get": {
+        "summary": "Get History",
+        "operationId": "get_history_api_rooms__room_id__history_get",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "range",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "enum": [
+                "8h",
+                "24h",
+                "7d"
+              ],
+              "type": "string",
+              "default": "24h",
+              "title": "Range"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HistoryOut"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad range"
+          },
+          "404": {
+            "description": "Room not found"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/rooms/{room_id}/readings": {
+      "post": {
+        "summary": "Upload",
+        "operationId": "upload_api_rooms__room_id__readings_post",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Room Id"
+            }
+          },
+          {
+            "name": "x-device-key",
+            "in": "header",
+            "required": false,
+            "schema": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "null"
+                }
+              ],
+              "title": "X-Device-Key"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadResult"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Malformed body"
+          },
+          "401": {
+            "description": "Missing or wrong device key"
+          },
+          "404": {
+            "description": "Room not found"
+          },
+          "413": {
+            "description": "Body over 64 KB"
+          },
+          "503": {
+            "description": "Database busy, retry later"
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        },
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "required": [
+                  "readings"
+                ],
+                "properties": {
+                  "readings": {
+                    "type": "array",
+                    "minItems": 1,
+                    "maxItems": 100,
+                    "items": {
+                      "type": "object",
+                      "required": [
+                        "ts",
+                        "sensors"
+                      ],
+                      "properties": {
+                        "ts": {
+                          "type": "integer",
+                          "description": "Unix seconds"
+                        },
+                        "sensors": {
+                          "type": "object",
+                          "maxProperties": 4,
+                          "additionalProperties": {
+                            "type": "object",
+                            "required": [
+                              "t",
+                              "h"
+                            ],
+                            "properties": {
+                              "t": {
+                                "type": "number"
+                              },
+                              "h": {
+                                "type": "number"
+                              }
+                            }
+                          }
+                        },
+                        "rssi": {
+                          "type": "integer"
+                        }
+                      }
+                    }
+                  }
+                }
+              },
+              "example": {
+                "readings": [
+                  {
+                    "ts": 1792308900,
+                    "sensors": {
+                      "sht40": {
+                        "t": 24.31,
+                        "h": 52.1
+                      },
+                      "aht20": {
+                        "t": 24.55,
+                        "h": 50.8
+                      }
+                    },
+                    "rssi": -58
+                  }
+                ]
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "ComfortOut": {
+        "properties": {
+          "t": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "T"
+          },
+          "h": {
+            "prefixItems": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "number"
+              }
+            ],
+            "type": "array",
+            "maxItems": 2,
+            "minItems": 2,
+            "title": "H"
+          }
+        },
+        "type": "object",
+        "required": [
+          "t",
+          "h"
+        ],
+        "title": "ComfortOut"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "HistoryOut": {
+        "properties": {
+          "range": {
+            "$ref": "#/components/schemas/RangeName"
+          },
+          "bucket_s": {
+            "type": "integer",
+            "title": "Bucket S"
+          },
+          "sensors": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Sensors"
+          },
+          "points": {
+            "items": {
+              "items": {
+                "anyOf": [
+                  {
+                    "type": "integer"
+                  },
+                  {
+                    "type": "number"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ]
+              },
+              "type": "array"
+            },
+            "type": "array",
+            "title": "Points"
+          }
+        },
+        "type": "object",
+        "required": [
+          "range",
+          "bucket_s",
+          "sensors",
+          "points"
+        ],
+        "title": "HistoryOut"
+      },
+      "LatestOut": {
+        "properties": {
+          "ts": {
+            "type": "integer",
+            "title": "Ts"
+          },
+          "age_s": {
+            "type": "integer",
+            "title": "Age S"
+          },
+          "sensors": {
+            "additionalProperties": {
+              "$ref": "#/components/schemas/SensorOut"
+            },
+            "type": "object",
+            "title": "Sensors"
+          },
+          "rssi": {
+            "anyOf": [
+              {
+                "type": "integer"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Rssi"
+          }
+        },
+        "type": "object",
+        "required": [
+          "ts",
+          "age_s",
+          "sensors",
+          "rssi"
+        ],
+        "title": "LatestOut"
+      },
+      "RangeName": {
+        "type": "string",
+        "enum": [
+          "8h",
+          "24h",
+          "7d"
+        ]
+      },
+      "RoomOut": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "comfort": {
+            "$ref": "#/components/schemas/ComfortOut"
+          },
+          "latest": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/LatestOut"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "comfort",
+          "latest"
+        ],
+        "title": "RoomOut"
+      },
+      "SensorOut": {
+        "properties": {
+          "t": {
+            "type": "number",
+            "title": "T"
+          },
+          "h": {
+            "type": "number",
+            "title": "H"
+          }
+        },
+        "type": "object",
+        "required": [
+          "t",
+          "h"
+        ],
+        "title": "SensorOut"
+      },
+      "UploadResult": {
+        "properties": {
+          "accepted": {
+            "type": "integer",
+            "title": "Accepted"
+          },
+          "rejected": {
+            "type": "integer",
+            "title": "Rejected"
+          }
+        },
+        "type": "object",
+        "required": [
+          "accepted",
+          "rejected"
+        ],
+        "title": "UploadResult"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
+      }
+    }
+  }
+}
