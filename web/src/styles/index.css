@@ -1,0 +1,44 @@
+@import 'tailwindcss';
+
+/* Light theme values; the dark overrides below follow the system setting. */
+@theme {
+  --color-page: #f9f9f7;
+  --color-surface: #fcfcfb;
+  --color-ink: #0b0b0b;
+  --color-ink-2: #52514e;
+  --color-muted: #6f6d68;
+  --color-border: rgba(11, 11, 11, 0.1);
+  --color-grid: #e1e0d9;
+  --color-axis: #c3c2b7;
+  --color-band: rgba(11, 11, 11, 0.05);
+  /* Dots and bands use the bright colors; text uses the -ink variants, which keep 4.5:1 contrast. */
+  --color-good: #0ca30c;
+  --color-warning: #fab219;
+  --color-critical: #d03b3b;
+  --color-good-ink: #0a7f0a;
+  --color-warning-ink: #8a5d00;
+  --color-critical-ink: #b52f2f;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --color-page: #0d0d0d;
+    --color-surface: #1a1a19;
+    --color-ink: #ffffff;
+    --color-ink-2: #c3c2b7;
+    --color-muted: #898781;
+    --color-border: rgba(255, 255, 255, 0.1);
+    --color-grid: #2c2c2a;
+    --color-axis: #383835;
+    --color-band: rgba(255, 255, 255, 0.06);
+    --color-good-ink: #0ca30c;
+    --color-warning-ink: #fab219;
+    --color-critical-ink: #e86a6a;
+  }
+}
+
+html {
+  background: var(--color-page);
+  color: var(--color-ink);
+  color-scheme: light dark;
+}

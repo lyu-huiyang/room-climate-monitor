@@ -1,0 +1,32 @@
+{
+  "app": { "title": "Room Climate" },
+  "common": { "loading": "Loading…", "error": "Failed to load", "retry": "Retry", "backHome": "Back to overview" },
+  "status": { "online": "Online", "offline": "Offline" },
+  "room": {
+    "noData": "No data yet",
+    "offline": "Offline",
+    "ago": "{{count}} s ago",
+    "notFound": "Room not found",
+    "sensors": "Sensors",
+    "rssi": "Signal {{rssi}} dBm",
+    "historyError": "Could not load the history"
+  },
+  "overview": {
+    "emptyTitle": "No rooms yet",
+    "emptyHint": "Register a room on the server, then put the printed device key into the device configuration:",
+    "emptyCommand": "rcm room add living-room --name \"Living room\""
+  },
+  "sensor": { "failed": "Read failed" },
+  "agreement": {
+    "ok": "✓ Consistent",
+    "bad": "⚠ Inconsistent",
+    "detail": "Max ΔT {{dt}} °C · max ΔH {{dh}} %",
+    "okShort": "Sensors agree",
+    "badShort": "Sensors disagree"
+  },
+  "range": { "label": "Time range", "8h": "8 hours", "24h": "24 hours", "7d": "7 days" },
+  "chart": { "temperature": "Temperature", "humidity": "Humidity", "comfort": "Comfort range", "empty": "No data in this range" },
+  "notFound": { "title": "Page not found" },
+  "lang": { "switch": "Switch to Chinese" },
+  "crash": { "title": "Something went wrong", "hint": "The site may have just been updated; reloading fixes it.", "reload": "Reload" }
+}

@@ -1,0 +1,32 @@
+{
+  "app": { "title": "房间温湿度" },
+  "common": { "loading": "加载中…", "error": "加载失败", "retry": "重试", "backHome": "返回首页" },
+  "status": { "online": "在线", "offline": "已离线" },
+  "room": {
+    "noData": "暂无数据",
+    "offline": "已离线",
+    "ago": "{{count}} 秒前",
+    "notFound": "房间不存在",
+    "sensors": "传感器",
+    "rssi": "信号 {{rssi}} dBm",
+    "historyError": "历史曲线加载失败"
+  },
+  "overview": {
+    "emptyTitle": "还没有房间",
+    "emptyHint": "在服务器上运行下面的命令注册一个房间，再把打印出的设备密钥写进设备配置：",
+    "emptyCommand": "rcm room add living-room --name 客厅"
+  },
+  "sensor": { "failed": "读取失败" },
+  "agreement": {
+    "ok": "✓ 一致",
+    "bad": "⚠ 不一致",
+    "detail": "最大温差 {{dt}} °C · 最大湿差 {{dh}} %",
+    "okShort": "传感器读数一致",
+    "badShort": "传感器读数不一致"
+  },
+  "range": { "label": "时间范围", "8h": "8 小时", "24h": "24 小时", "7d": "7 天" },
+  "chart": { "temperature": "温度", "humidity": "湿度", "comfort": "舒适区间", "empty": "这段时间没有数据" },
+  "notFound": { "title": "页面不存在" },
+  "lang": { "switch": "切换到英文" },
+  "crash": { "title": "页面出错了", "hint": "网站可能刚更新过，刷新一下就好。", "reload": "刷新" }
+}
