@@ -1,0 +1,23 @@
+# Caddy example: automatic HTTPS plus basic auth in front of the app.
+# The app has no login of its own, so never expose it without basic_auth.
+# Create the hash with:  caddy hash-password
+# deploy/compose.yaml publishes the app on 127.0.0.1:8080. If Caddy runs in a container,
+# put it on the app's Docker network and proxy to app:8080 instead.
+climate.example.com {
+	# Optional: let devices outside the LAN upload over HTTPS with only their device key.
+	# Anyone can then tell registered room ids from unknown ones (401 vs 404); consider rate limiting.
+	# @ingest {
+	# 	method POST
+	# 	path_regexp ^/api/rooms/[a-z0-9-]+/readings$
+	# }
+	# handle @ingest {
+	# 	reverse_proxy 127.0.0.1:8080
+	# }
+
+	handle {
+		basic_auth {
+			family $2a$14$replace.with.your.own.caddy.hash.................
+		}
+		reverse_proxy 127.0.0.1:8080
+	}
+}

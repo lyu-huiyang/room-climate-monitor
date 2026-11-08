@@ -1,0 +1,15 @@
+.git
+**/node_modules
+**/dist
+**/.venv
+**/__pycache__
+**/.pytest_cache
+**/.ruff_cache
+**/*.sqlite3*
+web/test-results
+web/playwright-report
+.superpowers
+.claude
+docs
+deploy/data
+firmware

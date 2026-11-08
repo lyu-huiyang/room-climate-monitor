@@ -1,0 +1,41 @@
+# Traefik v3 file-provider example: HTTPS plus basic auth in front of the app.
+# The app has no login of its own, so never expose it without the auth middleware.
+#
+# Create the user line with:  htpasswd -nbB family 'a-long-password'
+# (in a YAML string keep the "$" signs as they are; in docker labels double them).
+http:
+  routers:
+    climate:
+      rule: Host(`climate.example.com`)
+      entryPoints: [websecure]
+      middlewares: [climate-auth]
+      service: climate
+      tls:
+        certResolver: letsencrypt
+
+    # Optional: let devices outside the LAN upload over HTTPS. Uploads carry their own
+    # per-room device key, so this route skips basic auth but matches only the upload path.
+    # Anyone can then tell registered room ids from unknown ones (401 vs 404) and send
+    # requests of up to 64 KB; consider a rate-limit middleware on this router.
+    # climate-ingest:
+    #   rule: Host(`climate.example.com`) && Method(`POST`) && PathRegexp(`^/api/rooms/[a-z0-9-]+/readings$`)
+    #   entryPoints: [websecure]
+    #   service: climate
+    #   priority: 100
+    #   tls:
+    #     certResolver: letsencrypt
+
+  middlewares:
+    climate-auth:
+      basicAuth:
+        users:
+          - "family:$2y$05$replace.with.your.own.htpasswd.hash..............."
+
+  # deploy/compose.yaml publishes the app on 127.0.0.1:8080, which a Traefik running directly on
+  # the host can reach. A Traefik in a container cannot: put it on the same Docker network as
+  # the app and use "http://app:8080" here instead.
+  services:
+    climate:
+      loadBalancer:
+        servers:
+          - url: "http://127.0.0.1:8080"
