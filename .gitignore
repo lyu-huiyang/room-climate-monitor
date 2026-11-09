@@ -9,5 +9,9 @@ web/test-results/
 web/playwright-report/
 .DS_Store
 deploy/data/
+firmware/.pio/
+firmware/include/secrets.h
+firmware/include/secrets.*.h
+!firmware/include/secrets.example.h
 .claude/
 .superpowers/
