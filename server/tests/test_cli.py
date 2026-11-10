@@ -192,3 +192,45 @@ def test_list_columns_align_with_wide_characters(run):
         for line, token in zip(lines, ["TEMP", "22-26", "22-26"], strict=True)
     }
     assert len(starts) == 1
+
+
+def test_serve_with_unusable_data_dir_explains_instead_of_crashing(tmp_path, monkeypatch, capsys):
+    blocker = tmp_path / "data"
+    blocker.write_text("not a directory")
+    monkeypatch.setenv("RCM_DB_PATH", str(blocker / "rcm.sqlite3"))
+
+    def no_server(*_args, **_kwargs):
+        raise AssertionError("uvicorn must not start")
+
+    monkeypatch.setattr("uvicorn.run", no_server)
+    code = main(["serve"])
+    err = capsys.readouterr().err
+    assert code == 1
+    assert str(blocker / "rcm.sqlite3") in err
+    assert "10001" in err
+    assert "Traceback" not in err
+
+
+def test_serve_prepares_the_database_before_starting(db_path, monkeypatch):
+    started = []
+    monkeypatch.setattr("uvicorn.run", lambda *a, **k: started.append(a))
+    assert main(["serve"]) == 0
+    assert started
+    conn = open_db(db_path)
+    assert conn.execute("PRAGMA user_version").fetchone()[0] >= 1
+
+
+def test_serve_with_corrupt_database_points_to_the_backup(tmp_path, monkeypatch, capsys):
+    path = tmp_path / "rcm.sqlite3"
+    path.write_bytes(b"this is not a database" * 100)
+    monkeypatch.setenv("RCM_DB_PATH", str(path))
+
+    def no_server(*_args, **_kwargs):
+        raise AssertionError("uvicorn must not start")
+
+    monkeypatch.setattr("uvicorn.run", no_server)
+    code = main(["serve"])
+    err = capsys.readouterr().err
+    assert code == 1
+    assert "备份" in err and "backup" in err
+    assert "10001" not in err

@@ -173,9 +173,40 @@ def cmd_backup(args: argparse.Namespace) -> None:
     print(f"已备份 / backed up: {dest}")
 
 
+def _prepare_database(path: Path) -> None:
+    """Open and migrate before serving, so an unusable data directory fails once with a hint
+    instead of a traceback on every container restart."""
+    try:
+        conn = connect(path)
+        try:
+            migrate(conn)
+        finally:
+            conn.close()
+    except (OSError, sqlite3.DatabaseError) as e:
+        reason = str(e)
+        if isinstance(e, OSError) or "readonly" in reason or "unable to open" in reason:
+            raise CliError(
+                f"无法打开数据库 {path}（{reason}）。在 Docker 里运行时，"
+                "数据目录和数据库文件必须属于 uid 10001：sudo chown -R 10001:10001 data，或者改用命名卷",
+                f"cannot open the database {path} ({reason}). In Docker the data directory and the "
+                "database file must belong to uid 10001: sudo chown -R 10001:10001 data, "
+                "or use a named volume",
+            ) from None
+        if "not a database" in reason or "malformed" in reason:
+            raise CliError(
+                f"数据库文件 {path} 已损坏（{reason}），请用备份恢复（见 README 的备份与恢复）",
+                f"the database file {path} is damaged ({reason}); restore it from a backup "
+                "(see Backup and restore in the README)",
+            ) from None
+        raise CliError(
+            f"无法打开数据库 {path}（{reason}）", f"cannot open the database {path} ({reason})"
+        ) from None
+
+
 def cmd_serve(args: argparse.Namespace) -> None:
     import uvicorn
 
+    _prepare_database(Settings.from_env().db_path)
     uvicorn.run("rcm.main:app", host=args.host, port=args.port, workers=1)
 
 
