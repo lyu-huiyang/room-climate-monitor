@@ -1,0 +1,109 @@
+name: image
+
+# Publish the Docker image to ghcr.io for every release tag. Run it by hand with a tag to
+# publish (or republish) the image of an existing release.
+on:
+  push:
+    tags: ["v*.*.*"]
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: Release tag to publish, e.g. v1.0.0
+        required: true
+
+permissions:
+  contents: read
+
+concurrency:
+  group: image-${{ inputs.tag || github.ref_name }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: read
+      packages: write
+    env:
+      TAG: ${{ inputs.tag || github.ref_name }}
+    steps:
+      - name: Check the tag
+        run: |
+          [[ "$TAG" =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::not a release tag: $TAG"; exit 1; }
+      - uses: actions/checkout@v7.0.1
+        with:
+          ref: refs/tags/${{ env.TAG }}
+      - name: The tag matches the package version
+        run: |
+          grep -qx "__version__ = \"${TAG#v}\"" server/src/rcm/__init__.py ||
+            { echo "::error::$TAG does not match server/src/rcm/__init__.py"; exit 1; }
+      - name: Work out the image tags
+        id: tags
+        run: |
+          version=${TAG#v}
+          image=ghcr.io/$(printf '%s' "$GITHUB_REPOSITORY" | tr '[:upper:]' '[:lower:]')
+          newest=$(git ls-remote --tags --refs origin 'v*.*.*' | awk -F/ '{print $3}' |
+            grep -E '^v[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -n 1)
+          tags="$image:$version"
+          # Republishing an older release must not move the floating tags back to it.
+          if [ "$TAG" = "$newest" ]; then
+            tags="$tags,$image:${version%.*},$image:${version%%.*},$image:latest"
+          fi
+          echo "version=$version" >> "$GITHUB_OUTPUT"
+          echo "revision=$(git rev-parse HEAD)" >> "$GITHUB_OUTPUT"
+          echo "tags=$tags" >> "$GITHUB_OUTPUT"
+          echo "$tags"
+      - uses: docker/setup-qemu-action@v4.4.0
+        with:
+          image: tonistiigi/binfmt:qemu-v10.2.3-68
+          platforms: arm64
+      - uses: docker/setup-buildx-action@v4.4.1
+        with:
+          version: v0.38.2
+      - name: Build for the smoke test
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          file: deploy/Dockerfile
+          platforms: linux/amd64
+          load: true
+          tags: room-climate-monitor:smoke
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+      - name: Smoke test
+        env:
+          VERSION: ${{ steps.tags.outputs.version }}
+        run: |
+          docker run -d --name rcm -p 127.0.0.1:8080:8080 room-climate-monitor:smoke
+          for _ in $(seq 30); do
+            if body=$(curl -fsS http://127.0.0.1:8080/api/health); then
+              echo "$body"
+              python3 -c 'import json, os, sys; sys.exit(json.loads(sys.argv[1])["version"] != os.environ["VERSION"])' "$body" && exit 0
+              echo "::error::the image reports another version"; exit 1
+            fi
+            sleep 1
+          done
+          docker logs rcm
+          exit 1
+      - uses: docker/login-action@v4.8.0
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      - name: Build and push
+        uses: docker/build-push-action@v7.4.0
+        with:
+          context: .
+          file: deploy/Dockerfile
+          platforms: linux/amd64,linux/arm64
+          push: true
+          tags: ${{ steps.tags.outputs.tags }}
+          labels: |
+            org.opencontainers.image.title=room-climate-monitor
+            org.opencontainers.image.description=Self-hosted temperature and humidity monitor for every room at home
+            org.opencontainers.image.source=https://github.com/${{ github.repository }}
+            org.opencontainers.image.url=https://lyu-huiyang.github.io/room-climate-monitor/
+            org.opencontainers.image.version=${{ steps.tags.outputs.version }}
+            org.opencontainers.image.revision=${{ steps.tags.outputs.revision }}
+            org.opencontainers.image.licenses=MIT
+          cache-from: type=gha

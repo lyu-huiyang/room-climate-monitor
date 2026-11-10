@@ -1,8 +1,9 @@
 # syntax=docker/dockerfile:1
 # Build from the repository root: docker build -f deploy/Dockerfile -t room-climate-monitor .
 
-# 1. Web app → static files
-FROM node:26.13.0-alpine AS web
+# 1. Web app → static files. They do not depend on the CPU, so a multi-platform build runs
+#    this stage once, natively, instead of under emulation for every target.
+FROM --platform=$BUILDPLATFORM node:26.13.0-alpine AS web
 # Node 25+ no longer ships corepack, so install the pinned pnpm directly.
 RUN npm install -g pnpm@12.3.4
 WORKDIR /src/web

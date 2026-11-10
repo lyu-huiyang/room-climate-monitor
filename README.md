@@ -35,6 +35,7 @@ curl http://127.0.0.1:8080/api/health
 - **数据目录**：必须让 uid 10001 可写。忘了 `chown` 时容器会反复重启，`docker compose logs app` 会提示原因；也可以改用命名卷，见 `deploy/compose.yaml` 里的注释。
 - **局域网上报**：默认只监听 `127.0.0.1:8080`，局域网里的板子连不上。在 `deploy/compose.yaml` 里取消注释服务器局域网地址那一行（例如 `192.168.1.10:8080:8080`），保留 `127.0.0.1` 那一行，然后再执行一次 `docker compose up -d`。之后手机也可以直接打开 `http://192.168.1.10:8080`。
 - **时区**：`rcm room list` 默认按 UTC 显示时间，在 compose 里设置 `TZ` 可以改成本地时间。网页总是按手机的时区显示。
+- **预构建镜像**：不想在本机构建的话，把 `deploy/compose.yaml` 里 `build:` 那三行删掉，`image:` 改成 `ghcr.io/lyu-huiyang/room-climate-monitor:1`，然后执行 `docker compose pull && docker compose up -d`。镜像支持 amd64 和 arm64（例如树莓派）。`1` 会跟随 1.x 的最新版本，想固定版本就写 `1.0.0`。
 
 ### 注册房间
 
@@ -95,7 +96,7 @@ cd deploy
 docker compose up -d --build
 ```
 
-表结构会在启动时自动升级。升级前建议先备份一次。还开着的旧网页如果提示"页面出错了"，刷新一下即可。
+用预构建镜像时，改为执行 `docker compose pull && docker compose up -d`。表结构会在启动时自动升级。升级前建议先备份一次。还开着的旧网页如果提示"页面出错了"，刷新一下即可。
 
 ### 磁盘占用
 
@@ -159,6 +160,7 @@ Open `http://127.0.0.1:8080` in a browser. Until a room exists, the page shows t
 - **Data directory**: uid 10001 must be able to write to it. If you skip the `chown`, the container keeps restarting and `docker compose logs app` says why. A named volume works too; see the comments in `deploy/compose.yaml`.
 - **Uploads from the LAN**: by default the app listens on `127.0.0.1:8080` only, so boards on the LAN cannot reach it. In `deploy/compose.yaml`, uncomment the line with the server's LAN address (for example `192.168.1.10:8080:8080`), keep the `127.0.0.1` line, and run `docker compose up -d` again. Phones can then open `http://192.168.1.10:8080` directly.
 - **Time zone**: `rcm room list` shows times in UTC unless you set `TZ` in the compose file. The web app always uses the phone's time zone.
+- **Prebuilt image**: to skip building on this machine, delete the three `build:` lines in `deploy/compose.yaml`, set `image:` to `ghcr.io/lyu-huiyang/room-climate-monitor:1` and run `docker compose pull && docker compose up -d`. Images exist for amd64 and arm64 (a Raspberry Pi, for example). `1` follows the newest 1.x release; write `1.0.0` to stay on one version.
 
 ### Register a room
 
@@ -219,7 +221,7 @@ cd deploy
 docker compose up -d --build
 ```
 
-The schema is upgraded automatically on start. Back up first. A page left open from before the upgrade may say "Something went wrong"; reloading fixes it.
+With the prebuilt image, run `docker compose pull && docker compose up -d` instead. The schema is upgraded automatically on start. Back up first. A page left open from before the upgrade may say "Something went wrong"; reloading fixes it.
 
 ### Disk usage
 

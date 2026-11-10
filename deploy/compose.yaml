@@ -4,6 +4,8 @@
 #   docker compose exec app rcm room add living-room --name "Living room"
 services:
   app:
+    # To use the prebuilt image instead of building here, delete the three `build:` lines and
+    # set `image: ghcr.io/lyu-huiyang/room-climate-monitor:1` (amd64 and arm64).
     build:
       context: ..
       dockerfile: deploy/Dockerfile
