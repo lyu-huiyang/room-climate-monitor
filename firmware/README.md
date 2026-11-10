@@ -211,3 +211,18 @@ Type a capital `R` in the serial monitor to restart the board. Sampling starts o
 pio test -e native     # unit tests for the hardware-free parts (buffer, payload, policy, URL checks)
 pio run -e supermini   # build; uses the example config when there is no secrets.h
 ```
+
+---
+
+## 验收记录 / Acceptance record
+
+2026-11-10 在真机上（ESP32-C3 SuperMini + SHT40 + AHT20，服务端为局域网内的 Docker 部署）验证通过：
+
+- 固件占用 RAM 21.5%、Flash 59.7%。
+- 房间未注册时每分钟得到 `HTTP 404, will retry`，读数保留在缓存里，注册后补传。
+- 正常运行时每分钟 `upload: sent 6, 0 left`，两个传感器都是 `ok`。
+- 服务端停 20 分钟后恢复：缓存的读数在下一个上报时刻分两批（100 + 5）补传完，历史曲线没有缺口。
+- `https://` 服务端：TLS 握手和根证书校验成功。
+- 软重启后缓存保留；重新烧录后缓存清空。
+
+*Verified on real hardware on 2026-11-10: 404 keeps data for retry, uploads every minute, a 20-minute server outage is backfilled with no gap in the history, `https://` passes the TLS handshake and certificate check, and the buffer survives a soft restart.*
