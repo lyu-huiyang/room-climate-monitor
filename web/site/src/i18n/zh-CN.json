@@ -1,0 +1,62 @@
+{
+  "demo": {
+    "banner": "演示模式 · 数据为模拟",
+    "back": "返回项目主页",
+    "label": "演示数据",
+    "frameTitle": "Room Climate 演示",
+    "fullscreen": "全屏打开 demo",
+    "open": "打开 demo"
+  },
+  "meta": {
+    "title": "Room Climate · 家庭温湿度监控"
+  },
+  "hero": {
+    "title": "家里每个房间的温度和湿度，一眼看全",
+    "tagline": "ESP32 + 传感器 · 自托管 · 一个容器 · 开源 MIT",
+    "deploy": "部署指南",
+    "github": "GitHub"
+  },
+  "hardware": {
+    "title": "硬件",
+    "intro": "每个房间一块小开发板，接两个可以互相校验的传感器：",
+    "board": "ESP32-C3 SuperMini",
+    "sht40": "SHT40 温湿度传感器",
+    "aht20": "AHT20 温湿度传感器",
+    "more": "接线和烧录",
+    "moreHref": "https://github.com/lyu-huiyang/room-climate-monitor/blob/main/firmware/README.md#硬件和接线"
+  },
+  "deploy": {
+    "title": "三步部署",
+    "step1": {
+      "title": "启动服务端",
+      "text": "一个容器同时提供上报接口、查询接口和网页，数据目录必须属于 uid 10001。默认只监听 127.0.0.1：要让局域网里的板子连上，在 deploy/compose.yaml 里取消注释服务器局域网地址那一行，再执行一次 docker compose up -d。",
+      "code": "git clone https://github.com/lyu-huiyang/room-climate-monitor.git\ncd room-climate-monitor/deploy\nmkdir -p data && sudo chown 10001:10001 data\ndocker compose up -d --build",
+      "more": "快速开始",
+      "href": "https://github.com/lyu-huiyang/room-climate-monitor#快速开始docker-compose"
+    },
+    "step2": {
+      "title": "注册房间",
+      "text": "命令会打印这个房间的设备密钥，只显示这一次，下一步要用。",
+      "code": "docker compose exec app rcm room add living-room --name 客厅",
+      "more": "注册房间",
+      "href": "https://github.com/lyu-huiyang/room-climate-monitor#注册房间"
+    },
+    "step3": {
+      "title": "烧录开发板",
+      "text": "需要 PlatformIO Core 6.2.0。复制示例配置，填好 Wi-Fi、服务端的局域网地址 SERVER_URL（例如 http://192.168.1.10:8080）、房间 ID 和设备密钥，然后编译烧录。",
+      "code": "cd ../firmware\ncp include/secrets.example.h include/secrets.h\npio run -e supermini -t upload --upload-port <串口>",
+      "more": "配置固件",
+      "href": "https://github.com/lyu-huiyang/room-climate-monitor/blob/main/firmware/README.md#配置"
+    }
+  },
+  "why": {
+    "title": "为什么自托管",
+    "home": "读数不出家门。",
+    "noCloud": "没有云服务，也不用注册账号。",
+    "oneFile": "一个 SQLite 文件就是全部数据，一条命令就能备份。"
+  },
+  "footer": {
+    "license": "MIT 许可证",
+    "github": "GitHub 上的源码"
+  }
+}

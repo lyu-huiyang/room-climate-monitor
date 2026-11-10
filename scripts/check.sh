@@ -13,12 +13,15 @@ echo "==> server: ruff, pytest"
   uv run --locked pytest -q
 )
 
-echo "==> web: api types, lint, typecheck, unit tests, build, end-to-end"
-# Playwright reuses a server already on 8765 locally and would then skip `pnpm build`.
-if command -v lsof >/dev/null && lsof -nP -iTCP:8765 -sTCP:LISTEN >/dev/null; then
-  echo "port 8765 is in use; stop that server first so the end-to-end tests run on a fresh build" >&2
-  exit 1
-fi
+echo "==> web: api types, lint, typecheck, unit tests, build, end-to-end, project site"
+# Playwright reuses a server already on 8765 (app) or 4180 (project site) locally and
+# would then skip the build.
+for port in 8765 4180; do
+  if command -v lsof >/dev/null && lsof -nP -iTCP:$port -sTCP:LISTEN >/dev/null; then
+    echo "port $port is in use; stop that server first so the end-to-end tests run on a fresh build" >&2
+    exit 1
+  fi
+done
 (
   cd web
   pnpm check:api
@@ -26,6 +29,7 @@ fi
   pnpm typecheck
   pnpm test
   pnpm test:e2e   # its web server runs `pnpm build` first
+  pnpm test:site  # the project site; its web server runs `pnpm build:site` first
 )
 
 echo "==> firmware: native tests, build"

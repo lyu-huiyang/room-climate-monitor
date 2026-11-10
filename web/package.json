@@ -12,9 +12,12 @@
     "build": "tsc -b && vite build",
     "lint": "eslint .",
     "preview": "vite preview",
+    "build:site": "tsc -b && vite build --config vite.site.config.ts",
+    "preview:site": "vite preview --config vite.site.config.ts --host 127.0.0.1 --port 4180 --strictPort",
     "typecheck": "tsc -b",
     "test": "vitest run",
     "test:e2e": "playwright test",
+    "test:site": "playwright test --config playwright.site.config.ts",
     "gen:api": "uv run --project ../server rcm openapi > openapi.json && openapi-typescript openapi.json -o src/api/schema.d.ts",
     "check:api": "bash scripts/check-api.sh"
   },

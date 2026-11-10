@@ -8,6 +8,8 @@
 
 一个自托管的家庭房间温湿度监控。每个房间放一块 ESP32 开发板，接 1~4 个温湿度传感器，通过局域网把读数上报给服务端；家里人用手机浏览器查看各房间的实时读数和历史曲线。
 
+**在线 demo（模拟数据）**：https://lyu-huiyang.github.io/room-climate-monitor/
+
 - **服务端**：Python 3.14 + FastAPI + SQLite，一个容器、一个端口，同时提供上报接口、查询接口和网页。
 - **网页**：React，可安装到手机桌面（PWA），支持深色模式和中英文切换。
 - **命令行 `rcm`**：注册房间、修改名称和舒适区间、更换设备密钥、备份。
@@ -129,6 +131,8 @@ pnpm -C web dev                                                              # �
 ## English
 
 A self-hosted temperature and humidity monitor for the rooms of a home. Each room gets an ESP32 board with one to four sensors that post readings over the LAN; the family checks live values and history charts from a phone browser.
+
+**Live demo (simulated data)**: https://lyu-huiyang.github.io/room-climate-monitor/
 
 - **Server**: Python 3.14 + FastAPI + SQLite. One container and one port serve the upload API, the read API and the web app.
 - **Web app**: React, installable as a PWA, with dark mode and a Chinese/English switch.

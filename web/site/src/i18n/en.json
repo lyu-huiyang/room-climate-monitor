@@ -1,0 +1,62 @@
+{
+  "demo": {
+    "banner": "Demo mode · simulated data",
+    "back": "Back to the project page",
+    "label": "Demo data",
+    "frameTitle": "Room Climate demo",
+    "fullscreen": "Open the demo full screen",
+    "open": "Open demo"
+  },
+  "meta": {
+    "title": "Room Climate · home climate monitor"
+  },
+  "hero": {
+    "title": "Temperature and humidity of every room at home, at a glance",
+    "tagline": "ESP32 + sensors · self-hosted · one container · open source, MIT",
+    "deploy": "How to deploy",
+    "github": "GitHub"
+  },
+  "hardware": {
+    "title": "Hardware",
+    "intro": "One small board per room, with two sensors that check each other:",
+    "board": "ESP32-C3 SuperMini",
+    "sht40": "SHT40 temperature and humidity sensor",
+    "aht20": "AHT20 temperature and humidity sensor",
+    "more": "Wiring and flashing",
+    "moreHref": "https://github.com/lyu-huiyang/room-climate-monitor/blob/main/firmware/README.md#hardware-and-wiring"
+  },
+  "deploy": {
+    "title": "Deploy in three steps",
+    "step1": {
+      "title": "Start the server",
+      "text": "One container serves the upload API, the read API and this web app; the data directory must belong to uid 10001. It listens on 127.0.0.1 only: to let boards on the LAN reach it, uncomment the line with the server's LAN address in deploy/compose.yaml and run docker compose up -d again.",
+      "code": "git clone https://github.com/lyu-huiyang/room-climate-monitor.git\ncd room-climate-monitor/deploy\nmkdir -p data && sudo chown 10001:10001 data\ndocker compose up -d --build",
+      "more": "Quick start",
+      "href": "https://github.com/lyu-huiyang/room-climate-monitor#quick-start-docker-compose"
+    },
+    "step2": {
+      "title": "Register a room",
+      "text": "The command prints the room's device key once; keep it for the next step.",
+      "code": "docker compose exec app rcm room add living-room --name \"Living room\"",
+      "more": "Register a room",
+      "href": "https://github.com/lyu-huiyang/room-climate-monitor#register-a-room"
+    },
+    "step3": {
+      "title": "Flash the board",
+      "text": "Needs PlatformIO Core 6.2.0. Copy the example config, fill in Wi-Fi, the server's LAN address as SERVER_URL (for example http://192.168.1.10:8080), the room id and the device key, then build and flash.",
+      "code": "cd ../firmware\ncp include/secrets.example.h include/secrets.h\npio run -e supermini -t upload --upload-port <serial port>",
+      "more": "Configure the firmware",
+      "href": "https://github.com/lyu-huiyang/room-climate-monitor/blob/main/firmware/README.md#configure"
+    }
+  },
+  "why": {
+    "title": "Why self-hosted",
+    "home": "Readings never leave your home network.",
+    "noCloud": "No cloud service and no account.",
+    "oneFile": "One SQLite file holds all the data; back it up with one command."
+  },
+  "footer": {
+    "license": "MIT License",
+    "github": "Source on GitHub"
+  }
+}

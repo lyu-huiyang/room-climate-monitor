@@ -1,0 +1,5 @@
+@import '../../src/styles/index.css';
+
+/* The site root is web/site; make sure Tailwind sees the classes on both sides. */
+@source '../';
+@source '../../src';
