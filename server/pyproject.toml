@@ -1,6 +1,6 @@
 [project]
 name = "rcm"
-version = "0.1.0"
+version = "1.0.0"
 description = "Self-hosted room temperature and humidity monitor: API, CLI and web UI"
 authors = [
     { name = "Lyu Huiyang" }
