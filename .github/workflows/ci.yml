@@ -1,0 +1,60 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.3.3
+        with:
+          version: "0.13.6"
+          enable-cache: true
+          cache-dependency-glob: server/uv.lock
+      - uses: pnpm/action-setup@v6.1.1
+        with:
+          package_json_file: web/package.json
+      - uses: actions/setup-node@v7.1.0
+        with:
+          node-version-file: web/.nvmrc
+          cache: pnpm
+          cache-dependency-path: web/pnpm-lock.yaml
+      - uses: actions/cache@v6.1.0
+        with:
+          path: ~/.platformio
+          key: platformio-${{ runner.os }}-${{ hashFiles('firmware/platformio.ini') }}
+          # The toolchain download is ~1 GB; reuse an older cache when platformio.ini changes.
+          restore-keys: platformio-${{ runner.os }}-
+      - name: Install dependencies
+        run: |
+          uv sync --locked --project server
+          uv tool install --python 3.12.16 platformio==6.2.0
+          pnpm -C web install --frozen-lockfile
+          pnpm -C web exec playwright install --with-deps chromium
+      - name: Run checks
+        run: scripts/check.sh
+        env:
+          CI: "true"
+
+  docker:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - name: Build image
+        run: docker build -f deploy/Dockerfile -t room-climate-monitor:ci .
+      - name: Start container and wait for the health check
+        run: |
+          docker run -d --name rcm -p 127.0.0.1:8080:8080 room-climate-monitor:ci
+          for _ in $(seq 30); do
+            if curl -fsS http://127.0.0.1:8080/api/health; then exit 0; fi
+            sleep 1
+          done
+          docker logs rcm
+          exit 1
