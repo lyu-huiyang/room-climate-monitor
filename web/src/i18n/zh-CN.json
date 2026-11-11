@@ -3,6 +3,7 @@
   "common": { "loading": "加载中…", "error": "加载失败", "retry": "重试", "backHome": "返回首页" },
   "status": { "online": "在线", "offline": "已离线" },
   "room": {
+    "allRooms": "所有房间",
     "noData": "暂无数据",
     "offline": "已离线",
     "ago": "{{count}} 秒前",

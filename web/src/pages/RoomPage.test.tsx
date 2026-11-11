@@ -68,3 +68,27 @@ it('says when the history fails to load and retries on request', async () => {
   await userEvent.click(screen.getByRole('button', { name: '重试' }))
   expect(historyCalls()).toBe(before + 1)
 })
+
+it('links back to all rooms when there are several', async () => {
+  mockApi({
+    '/api/rooms': { body: [makeRoom({ id: 'bedroom', name: '卧室' }), makeRoom()] },
+    '/api/rooms/living-room': { body: makeRoom() },
+    '/api/rooms/living-room/history': { body: history() },
+  })
+  renderRoute('/rooms/:roomId', <RoomPage />, '/rooms/living-room')
+  await userEvent.click(await screen.findByRole('link', { name: '所有房间' }))
+  expect(screen.getByTestId('location')).toHaveTextContent(/^\/$/)
+})
+
+it('has no back link when the only room is this one', async () => {
+  // The overview opens the only room directly, so a link back would bounce straight here.
+  mockApi({
+    '/api/rooms': { body: [makeRoom()] },
+    '/api/rooms/living-room': { body: makeRoom() },
+    '/api/rooms/living-room/history': { body: history() },
+  })
+  renderRoute('/rooms/:roomId', <RoomPage />, '/rooms/living-room')
+  expect(await screen.findByRole('heading', { name: '客厅' })).toBeInTheDocument()
+  await screen.findByRole('heading', { name: /^温度/ })
+  expect(screen.queryByRole('link', { name: '所有房间' })).not.toBeInTheDocument()
+})

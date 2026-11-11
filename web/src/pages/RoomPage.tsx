@@ -12,6 +12,7 @@ import { useDarkMode } from '../hooks/useDarkMode'
 import { useHistory } from '../hooks/useHistory'
 import { useNowS } from '../hooks/useNowS'
 import { useRoom } from '../hooks/useRoom'
+import { useRooms } from '../hooks/useRooms'
 import { sensorColor } from '../lib/colors'
 import { freshness } from '../lib/freshness'
 import { DEFAULT_RANGE, parseRange } from '../lib/ranges'
@@ -26,6 +27,7 @@ export function RoomPage() {
   const [params, setParams] = useSearchParams()
   const range = parseRange(params.get('range'))
   const room = useRoom(roomId)
+  const rooms = useRooms()
   const history = useHistory(roomId, range)
   const dark = useDarkMode()
   const nowS = useNowS()
@@ -65,6 +67,13 @@ export function RoomPage() {
   return (
     <div className="space-y-4">
       <div>
+        {/* With one room the overview opens it directly, so a link back would bounce here. */}
+        {(rooms.data?.length ?? 0) > 1 && (
+          <Link to="/" className="mb-2 inline-flex items-center gap-1 py-1 text-sm text-ink-2 hover:text-ink">
+            <span aria-hidden="true">‹</span>
+            {t('room.allRooms')}
+          </Link>
+        )}
         <h1 className="text-2xl font-semibold">{room.data.name}</h1>
         <div className="mt-1 flex items-center gap-2 text-sm">
           <StatusDot online={freshness(latest?.ts ?? null, nowS).online} />

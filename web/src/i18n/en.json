@@ -3,6 +3,7 @@
   "common": { "loading": "Loading…", "error": "Failed to load", "retry": "Retry", "backHome": "Back to overview" },
   "status": { "online": "Online", "offline": "Offline" },
   "room": {
+    "allRooms": "All rooms",
     "noData": "No data yet",
     "offline": "Offline",
     "ago": "{{count}} s ago",

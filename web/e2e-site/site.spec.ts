@@ -78,3 +78,20 @@ test('short laptop screens see the whole first screen', async ({ page, isMobile 
   await expect(page.getByRole('heading', { level: 1 })).toBeInViewport()
   await expect(page.getByRole('link', { name: '全屏打开 demo' })).toBeInViewport({ ratio: 1 })
 })
+
+test('a demo room links back to all rooms', async ({ page }) => {
+  await page.goto('demo/#/rooms/bedroom')
+  await page.getByRole('link', { name: '所有房间' }).click()
+  await expect(page).toHaveURL(/#\/$/)
+  for (const name of ROOMS) await expect(page.getByText(name, { exact: true })).toBeVisible()
+})
+
+test('going back inside the phone frame stays on the landing page', async ({ page, isMobile }) => {
+  test.skip(isMobile, 'wide screens only')
+  await page.goto('./')
+  const demo = page.frameLocator('iframe[title="Room Climate 演示"]')
+  await demo.getByText('卧室', { exact: true }).click()
+  await demo.getByRole('link', { name: '所有房间' }).click()
+  for (const name of ROOMS) await expect(demo.getByText(name, { exact: true })).toBeVisible()
+  await expect(page).toHaveURL(/\/room-climate-monitor\/$/)
+})
