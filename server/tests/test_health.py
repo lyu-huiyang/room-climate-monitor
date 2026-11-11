@@ -1,3 +1,4 @@
+import json
 import tomllib
 from pathlib import Path
 
@@ -15,6 +16,8 @@ def test_openapi_is_served_under_api(client):
     assert client.get("/openapi.json").status_code == 404
 
 
-def test_version_matches_pyproject():
-    pyproject = tomllib.loads((Path(__file__).parents[1] / "pyproject.toml").read_text())
-    assert __version__ == pyproject["project"]["version"]
+def test_version_matches_pyproject_and_web_package():
+    repo = Path(__file__).parents[2]
+    pyproject = tomllib.loads((repo / "server" / "pyproject.toml").read_text())
+    package = json.loads((repo / "web" / "package.json").read_text())
+    assert __version__ == pyproject["project"]["version"] == package["version"]
